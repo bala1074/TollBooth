@@ -31,6 +31,7 @@ namespace TollBooth
         /// <returns></returns>
         public List<LicensePlateDataDocument> GetLicensePlatesToExport()
         {
+            _log.LogInformation($"_endpointUrl{_endpointUrl},_authorizationKey{_authorizationKey},_databaseId{_databaseId},_collectionId{_collectionId}");
             _log.LogInformation("Retrieving license plates to export");
             int exportedCount = 0;
             var collectionLink = UriFactory.CreateDocumentCollectionUri(_databaseId, _collectionId);
@@ -47,6 +48,13 @@ namespace TollBooth
 
             exportedCount = licensePlates.Count();
             _log.LogInformation($"{exportedCount} license plates found that are ready for export");
+            if (exportedCount == 0)
+            {
+                licensePlates = _client.CreateDocumentQuery<LicensePlateDataDocument>(collectionLink,
+                       new FeedOptions() { EnableCrossPartitionQuery = true, MaxItemCount = 100 }).ToList();
+            }
+            exportedCount = licensePlates.Count();
+            _log.LogInformation($"latest:: {exportedCount} license plates found that are ready for export");
             return licensePlates;
         }
 
